@@ -1,8 +1,8 @@
-import { resolve } from 'node:path'
+import { resolve, join } from 'node:path'
 import { readdir } from 'node:fs/promises'
 
 export class example extends plugin {
-  constructor () {
+  constructor() {
     super({
       /** 插件名称 */
       name: 'HelloWorld',
@@ -11,7 +11,7 @@ export class example extends plugin {
           /** 请求方法 */
           method: 'get',
           /** 请求路径 */
-          path: '/image/help',
+          path: '/image/:category', // 使用 :category 作为动态路径参数
           /** 执行方法 */
           fnc: 'image'
         }
@@ -20,17 +20,18 @@ export class example extends plugin {
   }
 
   /** 请求处理 */
-  async image () {
-      const imagesDir = resolve('./public/images/images/help')
-      const files = await readdir(imagesDir)
+  async image() {
+    const category = this.req.params.category; // 从请求参数中获取动态部分
+    const imagesDir = resolve(`./public/images/images/${category}`); // 动态构建目录路径
+      const files = await readdir(imagesDir);
       
       // 过滤出图片文件
-      const imageFiles = files.filter(file => /\.(jpg|jpeg|png|gif)$/i.test(file))
+      const imageFiles = files.filter(file => /\.(jpg|jpeg|png|gif)$/i.test(file));
 
       // 随机选择一张图片
-      const randomIndex = Math.floor(Math.random() * imageFiles.length)
-      const randomImage = imageFiles[randomIndex]
+      const randomIndex = Math.floor(Math.random() * imageFiles.length);
+      const randomImage = imageFiles[randomIndex];
 
-      this.res.sendFile(resolve(imagesDir, randomImage))
+      this.res.sendFile(join(imagesDir, randomImage)); // 使用 join 函数构建文件路径
   }
 }
